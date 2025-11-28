@@ -33,7 +33,7 @@ export default function InterviewList() {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['interviews', selectedStatus],
-    queryFn: () => interviewApi.list({ role: 'interviewer', ...(selectedStatus ? { status: selectedStatus } : {}) }),
+    queryFn: () => interviewApi.list({ role: 'candidate', ...(selectedStatus ? { status: selectedStatus } : {}) }),
   });
 
   const interviews = data?.interviews ?? [];
@@ -105,14 +105,14 @@ export default function InterviewList() {
               </TableHeader>
               <TableBody>
                 {interviews.map((interview) => (
-                  <TableRow key={interview.id}>
+                  <TableRow key={interview._id}>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{interview.candidateName}</p>
+                        <p className="font-medium">{interview.name}</p>
                         <p className="text-sm text-muted-foreground">{interview.candidateEmail}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">{interview.jdTitle}</TableCell>
+                    <TableCell className="font-medium">{interview.jobTitle}</TableCell>
                     <TableCell>
                       <div>
                         <p className="text-sm">
@@ -129,9 +129,9 @@ export default function InterviewList() {
                     <TableCell>{interview.interviewerName || 'Not assigned'}</TableCell>
                     <TableCell>
                       {interview.meetingLink ? (
-                        <a 
-                          href={interview.meetingLink} 
-                          target="_blank" 
+                        <a
+                          href={interview.meetingLink}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary hover:underline text-sm flex items-center gap-1"
                         >
