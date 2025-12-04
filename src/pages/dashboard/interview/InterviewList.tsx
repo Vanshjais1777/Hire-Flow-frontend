@@ -13,13 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Loader } from "@/components/shared/Loader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -33,7 +26,7 @@ export default function InterviewList() {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['interviews', selectedStatus],
-    queryFn: () => interviewApi.list({ role: 'candidate', ...(selectedStatus ? { status: selectedStatus } : {}) }),
+    queryFn: () => interviewApi.list(),
   });
 
   const interviews = data?.interviews ?? [];
@@ -108,29 +101,33 @@ export default function InterviewList() {
                   <TableRow key={interview._id}>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{interview.name}</p>
-                        <p className="text-sm text-muted-foreground">{interview.candidateEmail}</p>
+                        <p className="font-medium">{interview.candidate_id?.name || 'N/A'}</p>
+                        <p className="text-sm text-muted-foreground">{interview.candidate_id?.email || 'N/A'}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">{interview.jobTitle}</TableCell>
+                    <TableCell className="font-medium">{interview.mode || 'N/A'}</TableCell>
                     <TableCell>
                       <div>
                         <p className="text-sm">
-                          {new Date(interview.scheduledAt).toLocaleDateString()}
+                          {interview.scheduled_time ? new Date(interview.scheduled_time).toLocaleDateString() : 'Not scheduled'}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(interview.scheduledAt).toLocaleTimeString([], {
+                          {interview.scheduled_time ? new Date(interview.scheduled_time).toLocaleTimeString([], {
                             hour: '2-digit',
                             minute: '2-digit',
-                          })}
+                          }) : ''}
                         </p>
                       </div>
                     </TableCell>
-                    <TableCell>{interview.interviewerName || 'Not assigned'}</TableCell>
                     <TableCell>
-                      {interview.meetingLink ? (
+                      {interview.interviewer_ids && interview.interviewer_ids.length > 0
+                        ? interview.interviewer_ids.map((int: any) => int.name || 'Unknown').join(', ')
+                        : 'Not assigned'}
+                    </TableCell>
+                    <TableCell>
+                      {interview.meeting_link ? (
                         <a
-                          href={interview.meetingLink}
+                          href={interview.meeting_link}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-primary hover:underline text-sm flex items-center gap-1"
@@ -139,7 +136,7 @@ export default function InterviewList() {
                           Join Meeting
                         </a>
                       ) : (
-                        <span className="text-sm">{interview.location}</span>
+                        <span className="text-sm">{interview.mode === 'onsite' ? 'On-site' : 'Online'}</span>
                       )}
                     </TableCell>
                     <TableCell>{getStatusBadge(interview.status)}</TableCell>
@@ -150,7 +147,7 @@ export default function InterviewList() {
                           size="sm"
                           onClick={() =>
                             updateStatusMutation.mutate({
-                              id: interview.id,
+                              id: interview._id,
                               status: 'completed',
                             })
                           }
@@ -159,9 +156,9 @@ export default function InterviewList() {
                           Mark Complete
                         </Button>
                       )}
-                      {interview.status === 'completed' && interview.rating && (
+                      {interview.status === 'completed' && interview.feedback?.rating && (
                         <span className="text-sm">
-                          Rating: {interview.rating}/5
+                          Rating: {interview.feedback.rating}/5
                         </span>
                       )}
                     </TableCell>

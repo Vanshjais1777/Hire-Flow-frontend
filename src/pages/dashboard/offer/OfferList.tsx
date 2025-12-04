@@ -22,11 +22,13 @@ import { useNavigate } from "react-router-dom";
 export default function OfferList() {
   const navigate = useNavigate();
   
-  const { data: offers, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['offers'],
     queryFn: offerApi.list,
   });
 
+  const offers = data?.offers ?? [];
+ 
   const resendMutation = useMutation({
     mutationFn: offerApi.resend,
     onSuccess: () => {
@@ -84,7 +86,7 @@ export default function OfferList() {
                   <TableHead>Candidate</TableHead>
                   <TableHead>Position</TableHead>
                   <TableHead>Salary</TableHead>
-                  <TableHead>Joining Date</TableHead>
+                  <TableHead>Updated</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -92,25 +94,25 @@ export default function OfferList() {
               </TableHeader>
               <TableBody>
                 {offers.map((offer) => (
-                  <TableRow key={offer.id}>
+                  <TableRow key={offer._id}>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{offer.candidateName}</p>
-                        <p className="text-sm text-muted-foreground">{offer.candidateEmail}</p>
+                        <p className="font-medium">{offer.candidate_id?.name || 'N/A'}</p>
+                        <p className="text-sm text-muted-foreground">{offer.candidate_id?.email || 'N/A'}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">{offer.jdTitle}</TableCell>
+                    <TableCell className="font-medium">{offer.job_id?.title || 'N/A'}</TableCell>
                     <TableCell>
                       <span className="font-medium">
-                        {offer.salary.currency} {offer.salary.amount.toLocaleString()}
+                        {offer.salary_offered?.currency || 'INR'} {offer.salary_offered?.amount?.toLocaleString() || '0'}
                       </span>
                     </TableCell>
                     <TableCell>
-                      {new Date(offer.joiningDate).toLocaleDateString()}
+                      {offer.updatedAt ? new Date(offer.updatedAt).toLocaleDateString() : 'N/A'}
                     </TableCell>
                     <TableCell>{getStatusBadge(offer.status)}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(offer.createdAt).toLocaleDateString()}
+                      {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString() : 'N/A'}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
@@ -122,7 +124,7 @@ export default function OfferList() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => resendMutation.mutate(offer.id)}
+                            onClick={() => resendMutation.mutate(offer._id)}
                             disabled={resendMutation.isPending}
                           >
                             <Send className="h-4 w-4 mr-2" />

@@ -33,14 +33,6 @@ export default function AssessmentList() {
       // Get job_id - handle both populated object and direct ID
       const firstCandidate = shortlisted[0];
 
-      // Log for debugging
-      console.log("📋 First Candidate Data:", {
-        _id: firstCandidate._id,
-        candidate_id: firstCandidate.candidate_id,
-        job_id: firstCandidate.job_id,
-        fullData: firstCandidate,
-      });
-
       const jobId = firstCandidate?.job_id?._id || firstCandidate?.job_id;
 
       if (!jobId) {
